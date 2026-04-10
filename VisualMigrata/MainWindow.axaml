@@ -1,0 +1,56 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:VisualMigrata"
+        x:Class="VisualMigrata.MainWindow"
+        Title="VisualMigrata - GruisEngine Avalonia Host"
+        Width="1280" Height="720"
+        WindowState="Maximized"
+        Background="#0A0A0A">
+
+    <Grid>
+        <!-- 
+             Bottom Layer: Hardware Accelerated OpenGL Control 
+             Hit-testing is now handled natively via HitTestCore in C#.
+        -->
+        <local:GruisMapControl x:Name="MapControl" />
+
+        <!-- 
+             Top Layer: Avalonia UI Overlay 
+             Demonstrates managed UI rendering cleanly over the native GL viewport.
+        -->
+        <Border Background="#90000000" 
+                HorizontalAlignment="Left" 
+                VerticalAlignment="Top"
+                Margin="20" 
+                Padding="20" 
+                CornerRadius="8"
+                BorderBrush="#40FFFFFF"
+                BorderThickness="1">
+            <StackPanel Spacing="15">
+                <TextBlock Text="VisualMigrata Command Center" 
+                           FontWeight="Bold" 
+                           Foreground="White" 
+                           FontSize="18"/>
+                
+                <TextBlock Text="Engine Status: ONLINE" 
+                           Foreground="#00FF00" 
+                           FontWeight="SemiBold" 
+                           FontSize="12"/>
+
+                <TextBlock Text="Left-Click Node to view UI Data&#x0a;Right-Click/Drag to Rotate&#x0a;Scroll to Zoom" 
+                           Foreground="#B0B0B0" 
+                           FontSize="12"/>
+
+                <Button x:Name="LoadMockDataBtn" 
+                        Content="Inject Demo Data &amp; UI Labels" 
+                        Click="OnLoadMockDataClicked"
+                        Background="#0078D7" 
+                        Foreground="White" 
+                        FontWeight="Bold" 
+                        Padding="12,8"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
