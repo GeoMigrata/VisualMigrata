@@ -8,46 +8,86 @@
         Background="#0A0A0A">
 
     <Grid>
-        <!-- 
-             Bottom Layer: Hardware Accelerated OpenGL Control 
-             Hit-testing is now handled natively via HitTestCore in C#.
-        -->
+        <!-- Bottom Layer: Hardware Accelerated OpenGL Control -->
         <local:GruisMapControl x:Name="MapControl" />
 
-        <!-- 
-             Top Layer: Avalonia UI Overlay 
-             Demonstrates managed UI rendering cleanly over the native GL viewport.
-        -->
-        <Border Background="#90000000" 
+        <!-- Top Layer: Avalonia UI Command Center Overlay -->
+        <Border Background="#D00A0A0A" 
                 HorizontalAlignment="Left" 
                 VerticalAlignment="Top"
                 Margin="20" 
                 Padding="20" 
                 CornerRadius="8"
                 BorderBrush="#40FFFFFF"
-                BorderThickness="1">
-            <StackPanel Spacing="15">
-                <TextBlock Text="VisualMigrata Command Center" 
-                           FontWeight="Bold" 
+                BorderThickness="1"
+                Width="340"
+                BoxShadow="0 8 32 0 #80000000">
+            
+            <StackPanel Spacing="20">
+                <TextBlock Text="COMMAND CENTER" 
+                           FontWeight="Black" 
                            Foreground="White" 
-                           FontSize="18"/>
+                           FontSize="20"
+                           LetterSpacing="2"/>
                 
-                <TextBlock Text="Engine Status: ONLINE" 
-                           Foreground="#00FF00" 
-                           FontWeight="SemiBold" 
-                           FontSize="12"/>
+                <!-- SECTION A: GLOBAL STATISTICS -->
+                <Border Background="#20FFFFFF" CornerRadius="6" Padding="12" BorderBrush="#30FFFFFF" BorderThickness="1">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="GLOBAL STATISTICS" Foreground="#EFB122" FontWeight="Bold" FontSize="12" LetterSpacing="1"/>
+                        
+                        <Grid ColumnDefinitions="Auto, *">
+                            <TextBlock Grid.Column="0" Text="Engine Status:" Foreground="#A0A0A0" Width="130"/>
+                            <TextBlock Grid.Column="1" Text="ONLINE" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
+                        </Grid>
 
-                <TextBlock Text="Left-Click Node to view UI Data&#x0a;Right-Click/Drag to Rotate&#x0a;Scroll to Zoom" 
-                           Foreground="#B0B0B0" 
-                           FontSize="12"/>
+                        <Grid ColumnDefinitions="Auto, *">
+                            <TextBlock Grid.Column="0" Text="Total Population:" Foreground="#A0A0A0" Width="130"/>
+                            <TextBlock Grid.Column="1" x:Name="TotalPopulationText" Text="0.0 M" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right"/>
+                        </Grid>
 
-                <Button x:Name="LoadMockDataBtn" 
-                        Content="Inject Demo Data &amp; UI Labels" 
+                        <Grid ColumnDefinitions="Auto, *">
+                            <TextBlock Grid.Column="0" Text="Active Migrations:" Foreground="#A0A0A0" Width="130"/>
+                            <TextBlock Grid.Column="1" x:Name="ActiveMigrationsText" Text="0" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- SECTION B: SIMULATION CONTROLS -->
+                <Border Background="#20FFFFFF" CornerRadius="6" Padding="12" BorderBrush="#30FFFFFF" BorderThickness="1">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="SIMULATION CONTROLS" Foreground="#00FFFF" FontWeight="Bold" FontSize="12" LetterSpacing="1"/>
+                        
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Target Node ID:" Foreground="#A0A0A0" FontSize="12"/>
+                            <NumericUpDown x:Name="TargetNodeInput" Minimum="1" Maximum="999999" Value="1" FormatString="0" 
+                                           Background="#10FFFFFF" Foreground="White"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Injection Volume (M):" Foreground="#A0A0A0" FontSize="12"/>
+                            <NumericUpDown x:Name="PopulationAmountInput" Minimum="0.1" Maximum="1000.0" Value="5.0" Increment="1.0" FormatString="0.0"
+                                           Background="#10FFFFFF" Foreground="White"/>
+                        </StackPanel>
+
+                        <Button x:Name="InjectPopulationBtn" 
+                                Content="INJECT POPULATION" 
+                                Click="OnInjectPopulationClicked"
+                                Background="#0078D7" 
+                                Foreground="White" 
+                                FontWeight="Bold" 
+                                Padding="0,10"
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Utility / Debug -->
+                <Button Content="Reset &amp; Load Demo Layout" 
                         Click="OnLoadMockDataClicked"
-                        Background="#0078D7" 
-                        Foreground="White" 
-                        FontWeight="Bold" 
-                        Padding="12,8"
+                        Background="#303030" 
+                        Foreground="#A0A0A0" 
+                        Padding="0,8"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"/>
             </StackPanel>
