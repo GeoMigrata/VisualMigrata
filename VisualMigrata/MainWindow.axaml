@@ -8,89 +8,144 @@
         Background="#0A0A0A">
 
     <Grid>
-        <!-- Bottom Layer: Hardware Accelerated OpenGL Control -->
+        <!-- Bottom Layer: 3D OpenGL Control -->
         <local:GruisMapControl x:Name="MapControl" />
 
-        <!-- Top Layer: Avalonia UI Command Center Overlay -->
+        <!-- Top Layer: Left Command Center -->
         <Border Background="#D00A0A0A" 
-                HorizontalAlignment="Left" 
-                VerticalAlignment="Top"
-                Margin="20" 
-                Padding="20" 
-                CornerRadius="8"
-                BorderBrush="#40FFFFFF"
-                BorderThickness="1"
-                Width="340"
+                HorizontalAlignment="Left" VerticalAlignment="Top"
+                Margin="20" Padding="20" CornerRadius="8"
+                BorderBrush="#40FFFFFF" BorderThickness="1"
+                Width="380" MaxHeight="660"
                 BoxShadow="0 8 32 0 #80000000">
-            
-            <StackPanel Spacing="20">
-                <TextBlock Text="COMMAND CENTER" 
-                           FontWeight="Black" 
-                           Foreground="White" 
-                           FontSize="20"
-                           LetterSpacing="2"/>
-                
-                <!-- SECTION A: GLOBAL STATISTICS -->
-                <Border Background="#20FFFFFF" CornerRadius="6" Padding="12" BorderBrush="#30FFFFFF" BorderThickness="1">
-                    <StackPanel Spacing="10">
-                        <TextBlock Text="GLOBAL STATISTICS" Foreground="#EFB122" FontWeight="Bold" FontSize="12" LetterSpacing="1"/>
-                        
-                        <Grid ColumnDefinitions="Auto, *">
-                            <TextBlock Grid.Column="0" Text="Engine Status:" Foreground="#A0A0A0" Width="130"/>
-                            <TextBlock Grid.Column="1" Text="ONLINE" Foreground="#00FF00" FontWeight="Bold" HorizontalAlignment="Right"/>
-                        </Grid>
+            <ScrollViewer>
+                <StackPanel Spacing="20">
+                    <TextBlock Text="COMMAND CENTER" FontWeight="Black" Foreground="White" FontSize="20" LetterSpacing="2"/>
+                    
+                    <!-- SECTION A: GLOBAL STATISTICS -->
+                    <Border Background="#20FFFFFF" CornerRadius="6" Padding="12" BorderBrush="#30FFFFFF" BorderThickness="1">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="GLOBAL STATISTICS" Foreground="#EFB122" FontWeight="Bold" FontSize="12" LetterSpacing="1"/>
+                            <Grid ColumnDefinitions="Auto, *">
+                                <TextBlock Grid.Column="0" Text="Engine Status:" Foreground="#A0A0A0" Width="130"/>
+                                <TextBlock Grid.Column="1" x:Name="EngineStatusText" Text="WAITING..." Foreground="#EFB122" FontWeight="Bold" HorizontalAlignment="Right"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="Auto, *">
+                                <TextBlock Grid.Column="0" Text="Total Population:" Foreground="#A0A0A0" Width="130"/>
+                                <TextBlock Grid.Column="1" x:Name="TotalPopulationText" Text="0.0 M" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="Auto, *">
+                                <TextBlock Grid.Column="0" Text="Active Migrations:" Foreground="#A0A0A0" Width="130"/>
+                                <TextBlock Grid.Column="1" x:Name="ActiveMigrationsText" Text="0" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
 
-                        <Grid ColumnDefinitions="Auto, *">
-                            <TextBlock Grid.Column="0" Text="Total Population:" Foreground="#A0A0A0" Width="130"/>
-                            <TextBlock Grid.Column="1" x:Name="TotalPopulationText" Text="0.0 M" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right"/>
-                        </Grid>
+                    <!-- SECTION B: SIMULATION TOOLS -->
+                    <Border Background="#20FFFFFF" CornerRadius="6" Padding="12" BorderBrush="#30FFFFFF" BorderThickness="1">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="SIMULATION TOOLS" Foreground="#00FFFF" FontWeight="Bold" FontSize="12" LetterSpacing="1"/>
+                            
+                            <TabControl Background="Transparent">
+                                <!-- Fix TabItem wrapping by adjusting styles -->
+                                <TabControl.Styles>
+                                    <Style Selector="TabItem">
+                                        <Setter Property="FontSize" Value="14"/>
+                                        <Setter Property="Padding" Value="10,0,10,10"/>
+                                    </Style>
+                                </TabControl.Styles>
 
-                        <Grid ColumnDefinitions="Auto, *">
-                            <TextBlock Grid.Column="0" Text="Active Migrations:" Foreground="#A0A0A0" Width="130"/>
-                            <TextBlock Grid.Column="1" x:Name="ActiveMigrationsText" Text="0" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right"/>
-                        </Grid>
-                    </StackPanel>
+                                <!-- TAB 1: INJECT -->
+                                <TabItem Header="Inject">
+                                    <StackPanel Spacing="8" Margin="0,10,0,0">
+                                        <TextBlock Text="Target Node ID:" Foreground="#A0A0A0" FontSize="12"/>
+                                        <NumericUpDown x:Name="TargetNodeInput" Minimum="1" Maximum="999" Value="1" FormatString="0" Background="#10FFFFFF" Foreground="White"/>
+                                        <TextBlock Text="Volume (M):" Foreground="#A0A0A0" FontSize="12"/>
+                                        <NumericUpDown x:Name="PopulationAmountInput" Minimum="0.1" Maximum="1000.0" Value="5.0" Increment="1.0" FormatString="0.0" Background="#10FFFFFF" Foreground="White"/>
+                                        <Button Content="INJECT" Click="OnInjectPopulationClicked" Background="#0078D7" Foreground="White" FontWeight="Bold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                    </StackPanel>
+                                </TabItem>
+                                
+                                <!-- TAB 2: MIGRATE -->
+                                <TabItem Header="Migrate">
+                                    <StackPanel Spacing="8" Margin="0,10,0,0">
+                                        <Grid ColumnDefinitions="*,10,*">
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Source ID:" Foreground="#A0A0A0" FontSize="12"/>
+                                                <NumericUpDown x:Name="MigrateSourceInput" Minimum="1" Value="1" FormatString="0" Background="#10FFFFFF" Foreground="White"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Target ID:" Foreground="#A0A0A0" FontSize="12"/>
+                                                <NumericUpDown x:Name="MigrateTargetInput" Minimum="1" Value="2" FormatString="0" Background="#10FFFFFF" Foreground="White"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <TextBlock Text="Volume (M):" Foreground="#A0A0A0" FontSize="12"/>
+                                        <NumericUpDown x:Name="MigrateVolumeInput" Minimum="0.1" Value="10.0" Increment="1.0" FormatString="0.0" Background="#10FFFFFF" Foreground="White"/>
+                                        <Button Content="FORCE MIGRATION" Click="OnForceMigrationClicked" Background="#D77800" Foreground="White" FontWeight="Bold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                    </StackPanel>
+                                </TabItem>
+
+                                <!-- TAB 3: ACTIVITY -->
+                                <TabItem Header="Activity">
+                                    <StackPanel Spacing="8" Margin="0,10,0,0">
+                                        <TextBlock Text="Node ID:" Foreground="#A0A0A0" FontSize="12"/>
+                                        <NumericUpDown x:Name="ActivityNodeInput" Minimum="1" Value="1" FormatString="0" Background="#10FFFFFF" Foreground="White"/>
+                                        <TextBlock Text="Activity Level (0.0 - 1.0):" Foreground="#A0A0A0" FontSize="12"/>
+                                        <NumericUpDown x:Name="ActivityLevelInput" Minimum="0.0" Maximum="1.0" Value="1.0" Increment="0.1" FormatString="0.00" Background="#10FFFFFF" Foreground="White"/>
+                                        <Button Content="SET ACTIVITY" Click="OnSetActivityClicked" Background="#009955" Foreground="White" FontWeight="Bold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                    </StackPanel>
+                                </TabItem>
+                            </TabControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- SECTION C: OVERVIEW -->
+                    <Button Content="View Node Data Table" Click="OnToggleTableClicked" Background="#40FFFFFF" Foreground="White" FontWeight="Bold" Padding="0,10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    
+                    <!-- Target element to hide in Release mode -->
+                    <Button x:Name="ResetDemoBtn" Content="Reset &amp; Load Demo Layout" Click="OnLoadMockDataClicked" Background="#303030" Foreground="#A0A0A0" Padding="0,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Top Layer: Center Data Table Overlay (Hidden by default) -->
+        <Border x:Name="DataTableOverlay" IsVisible="False" Background="#F00A0A0A" HorizontalAlignment="Center" VerticalAlignment="Center" Width="800" Height="500" CornerRadius="8" BorderBrush="#40FFFFFF" BorderThickness="1" Padding="20">
+            <Grid RowDefinitions="Auto, Auto, *">
+                <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,15">
+                    <TextBlock Text="GLOBAL NODE OVERVIEW" FontWeight="Black" Foreground="White" FontSize="20" VerticalAlignment="Center"/>
+                    <Button Grid.Column="1" Content="CLOSE" Click="OnToggleTableClicked" Background="#FF3333" Foreground="White" FontWeight="Bold"/>
+                </Grid>
+
+                <!-- Table Header -->
+                <Border Grid.Row="1" Margin="0,0,0,10" Padding="5" Background="#30FFFFFF">
+                    <Grid ColumnDefinitions="80, 150, 150, 150, *">
+                        <TextBlock x:Name="HeaderCol0" Grid.Column="0" Text="ID" FontWeight="Bold" Foreground="#00FFFF"/>
+                        <TextBlock x:Name="HeaderCol1" Grid.Column="1" Text="NAME" FontWeight="Bold" Foreground="#00FFFF"/>
+                        <TextBlock x:Name="HeaderCol2" Grid.Column="2" Text="POPULATION" FontWeight="Bold" Foreground="#00FFFF"/>
+                        <TextBlock x:Name="HeaderCol3" Grid.Column="3" Text="ACTIVITY" FontWeight="Bold" Foreground="#00FFFF"/>
+                        <TextBlock x:Name="HeaderCol4" Grid.Column="4" Text="STATUS" FontWeight="Bold" Foreground="#00FFFF"/>
+                    </Grid>
                 </Border>
 
-                <!-- SECTION B: SIMULATION CONTROLS -->
-                <Border Background="#20FFFFFF" CornerRadius="6" Padding="12" BorderBrush="#30FFFFFF" BorderThickness="1">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="SIMULATION CONTROLS" Foreground="#00FFFF" FontWeight="Bold" FontSize="12" LetterSpacing="1"/>
-                        
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Target Node ID:" Foreground="#A0A0A0" FontSize="12"/>
-                            <NumericUpDown x:Name="TargetNodeInput" Minimum="1" Maximum="999999" Value="1" FormatString="0" 
-                                           Background="#10FFFFFF" Foreground="White"/>
-                        </StackPanel>
-
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Injection Volume (M):" Foreground="#A0A0A0" FontSize="12"/>
-                            <NumericUpDown x:Name="PopulationAmountInput" Minimum="0.1" Maximum="1000.0" Value="5.0" Increment="1.0" FormatString="0.0"
-                                           Background="#10FFFFFF" Foreground="White"/>
-                        </StackPanel>
-
-                        <Button x:Name="InjectPopulationBtn" 
-                                Content="INJECT POPULATION" 
-                                Click="OnInjectPopulationClicked"
-                                Background="#0078D7" 
-                                Foreground="White" 
-                                FontWeight="Bold" 
-                                Padding="0,10"
-                                Margin="0,5,0,0"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Center"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Utility / Debug -->
-                <Button Content="Reset &amp; Load Demo Layout" 
-                        Click="OnLoadMockDataClicked"
-                        Background="#303030" 
-                        Foreground="#A0A0A0" 
-                        Padding="0,8"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-            </StackPanel>
+                <!-- Table Content -->
+                <ScrollViewer Grid.Row="2">
+                    <ItemsControl x:Name="NodeTableItems">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:NodeViewModel">
+                                <Border BorderBrush="#20FFFFFF" BorderThickness="0,0,0,1" Padding="5">
+                                    <Grid ColumnDefinitions="80, 150, 150, 150, *">
+                                        <TextBlock Grid.Column="0" Text="{Binding Id}" Foreground="White"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="White"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding PopulationStr}" Foreground="#EFB122" FontWeight="Bold"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding ActivityStr}" Foreground="White"/>
+                                        <TextBlock Grid.Column="4" Text="{Binding Status}" Foreground="{Binding StatusColor}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </Border>
     </Grid>
 </Window>
