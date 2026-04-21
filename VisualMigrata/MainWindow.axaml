@@ -28,6 +28,7 @@
                             <TextBlock Text="GLOBAL STATISTICS" Foreground="#EFB122" FontWeight="Bold" FontSize="12" LetterSpacing="1"/>
                             <Grid ColumnDefinitions="Auto, *">
                                 <TextBlock Grid.Column="0" Text="Engine Status:" Foreground="#A0A0A0" Width="130"/>
+                                <!-- Added x:Name and changed default to WAITING -->
                                 <TextBlock Grid.Column="1" x:Name="EngineStatusText" Text="WAITING..." Foreground="#EFB122" FontWeight="Bold" HorizontalAlignment="Right"/>
                             </Grid>
                             <Grid ColumnDefinitions="Auto, *">
@@ -109,37 +110,53 @@
         </Border>
 
         <!-- Top Layer: Center Data Table Overlay (Hidden by default) -->
-        <Border x:Name="DataTableOverlay" IsVisible="False" Background="#F00A0A0A" HorizontalAlignment="Center" VerticalAlignment="Center" Width="800" Height="500" CornerRadius="8" BorderBrush="#40FFFFFF" BorderThickness="1" Padding="20">
+        <Border x:Name="DataTableOverlay" IsVisible="False" Background="#F00A0A0A" HorizontalAlignment="Center" VerticalAlignment="Center" Width="850" Height="500" CornerRadius="8" BorderBrush="#40FFFFFF" BorderThickness="1" Padding="20">
             <Grid RowDefinitions="Auto, Auto, *">
                 <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,15">
                     <TextBlock Text="GLOBAL NODE OVERVIEW" FontWeight="Black" Foreground="White" FontSize="20" VerticalAlignment="Center"/>
                     <Button Grid.Column="1" Content="CLOSE" Click="OnToggleTableClicked" Background="#FF3333" Foreground="White" FontWeight="Bold"/>
                 </Grid>
 
-                <!-- Table Header -->
+                <!-- DYNAMIC Table Headers -->
                 <Border Grid.Row="1" Margin="0,0,0,10" Padding="5" Background="#30FFFFFF">
-                    <Grid ColumnDefinitions="80, 150, 150, 150, *">
-                        <TextBlock x:Name="HeaderCol0" Grid.Column="0" Text="ID" FontWeight="Bold" Foreground="#00FFFF"/>
-                        <TextBlock x:Name="HeaderCol1" Grid.Column="1" Text="NAME" FontWeight="Bold" Foreground="#00FFFF"/>
-                        <TextBlock x:Name="HeaderCol2" Grid.Column="2" Text="POPULATION" FontWeight="Bold" Foreground="#00FFFF"/>
-                        <TextBlock x:Name="HeaderCol3" Grid.Column="3" Text="ACTIVITY" FontWeight="Bold" Foreground="#00FFFF"/>
-                        <TextBlock x:Name="HeaderCol4" Grid.Column="4" Text="STATUS" FontWeight="Bold" Foreground="#00FFFF"/>
-                    </Grid>
+                    <ItemsControl x:Name="DynamicHeadersControl">
+                        <ItemsControl.ItemsPanel>
+                            <!-- UniformGrid automatically splits columns equally based on the amount of items! -->
+                            <ItemsPanelTemplate>
+                                <UniformGrid Rows="1"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock Text="{Binding}" FontWeight="Bold" Foreground="#00FFFF" Margin="5,0"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </Border>
 
-                <!-- Table Content -->
+                <!-- DYNAMIC Table Rows -->
                 <ScrollViewer Grid.Row="2">
-                    <ItemsControl x:Name="NodeTableItems">
+                    <ItemsControl x:Name="DynamicRowsControl">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="local:NodeViewModel">
+                            <!-- The Row -->
+                            <DataTemplate>
                                 <Border BorderBrush="#20FFFFFF" BorderThickness="0,0,0,1" Padding="5">
-                                    <Grid ColumnDefinitions="80, 150, 150, 150, *">
-                                        <TextBlock Grid.Column="0" Text="{Binding Id}" Foreground="White"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="White"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding PopulationStr}" Foreground="#EFB122" FontWeight="Bold"/>
-                                        <TextBlock Grid.Column="3" Text="{Binding ActivityStr}" Foreground="White"/>
-                                        <TextBlock Grid.Column="4" Text="{Binding Status}" Foreground="{Binding StatusColor}"/>
-                                    </Grid>
+                                    <ItemsControl ItemsSource="{Binding}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Rows="1"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <!-- The Individual Cell -->
+                                            <DataTemplate x:DataType="local:CellViewModel">
+                                                <TextBlock Text="{Binding Text}" 
+                                                           Foreground="{Binding Brush}" 
+                                                           FontWeight="{Binding Weight}"
+                                                           Margin="5,0"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

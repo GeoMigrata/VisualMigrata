@@ -14,18 +14,17 @@ public partial class MainWindow : Window, IVisualMigrataApi
     private GruisNodeData[]? _mockNodes;
     private List<GruisMigrationData>? _mockMigrations;
     private float _mockTotalPop = 0f;
-    private DispatcherTimer? _mockSimTimer; // Timer for standalone tick logic
+    private DispatcherTimer? _mockSimTimer;
 
     public MainWindow()
     {
         InitializeComponent();
         MigrataBridge.ViewLayer = this;
 
-        // Hide the mock button if built for Release
 #if !DEBUG
         ResetDemoBtn.IsVisible = false;
 #else
-        // Standalone UI Mock Feature: Initialize a background timer to "drain" and recycle migrations 
+        // Standalone UI Mock Feature: Timer to drain and recycle mock migrations 
         _mockSimTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
         _mockSimTimer.Tick += MockSimulationTick;
         _mockSimTimer.Start();
@@ -79,50 +78,16 @@ public partial class MainWindow : Window, IVisualMigrataApi
     private void OnLoadMockDataClicked(object? sender, RoutedEventArgs e) => InjectDemoData();
 
     // =========================================================================
-    // DATA TABLE BINDING LOGIC
-    // =========================================================================
-
-    private void RefreshDataTable()
-    {
-        if (_mockNodes == null) return;
-
-        var viewData = _mockNodes.Select(n => new NodeViewModel
-        {
-            Id = n.Id,
-            Name = n.Name,
-            PopulationStr = $"{n.Population:F1} M",
-            ActivityStr = $"{n.ActivityLevel:F2}",
-            Status = n.Status,
-            StatusColor = n.Status == "CRITICAL" ? "#FF0000" : "#00FF00"
-        }).ToList();
-
-        NodeTableItems.ItemsSource = viewData;
-    }
-
-    // =========================================================================
     // INBOUND API IMPLEMENTATION
     // =========================================================================
-    
+
     public void SetEngineStatus(string status, bool isOnline)
     {
         Dispatcher.UIThread.Post(() =>
         {
             EngineStatusText.Text = status;
-            // Green if online, Red if offline
             EngineStatusText.Foreground = isOnline ? 
                 Avalonia.Media.Brushes.Lime : Avalonia.Media.Brushes.Red;
-        });
-    }
-
-    public void UpdateTableHeaders(string col1, string col2, string col3, string col4, string col5)
-    {
-        Dispatcher.UIThread.Post(() =>
-        {
-            HeaderCol0.Text = col1;
-            HeaderCol1.Text = col2;
-            HeaderCol2.Text = col3;
-            HeaderCol3.Text = col4;
-            HeaderCol4.Text = col5;
         });
     }
 
@@ -135,6 +100,24 @@ public partial class MainWindow : Window, IVisualMigrataApi
         });
     }
 
+    public void UpdateDynamicTable(string[] headers, TableCellData[][] rows)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            DynamicHeadersControl.ItemsSource = headers;
+
+            // Convert raw backend API data into Avalonia-friendly ViewModels (Brushes/Fonts)
+            var viewRows = rows.Select(row => row.Select(cell => new CellViewModel 
+            {
+                Text = cell.Text,
+                Brush = Avalonia.Media.SolidColorBrush.Parse(cell.ColorHex),
+                Weight = cell.IsBold ? Avalonia.Media.FontWeight.Bold : Avalonia.Media.FontWeight.Normal
+            }).ToList()).ToList();
+
+            DynamicRowsControl.ItemsSource = viewRows;
+        });
+    }
+
     public void UpdateSimulationData(GruisNodeData[] nodes, GruisMigrationData[] migrations) => MapControl.UpdateSimulation(nodes, migrations);
     
     public void UpdateLabelsJSON(string jsonPayload) => MapControl.UpdateLabelsJSON(jsonPayload);
@@ -143,21 +126,37 @@ public partial class MainWindow : Window, IVisualMigrataApi
     // STANDALONE LOCAL MOCK LOGIC
     // =========================================================================
 
-    /// <summary>
-    /// Simulates the background engine tick by slowly draining migration volumes.
-    /// When they reach 0, they are recycled out of the active flow.
-    /// </summary>
+    private void RefreshDataTable()
+    {
+        if (_mockNodes == null) return;
+
+        // Mock Dynamic Headers (Note: 6 columns instead of 5 to prove dynamic width works)
+        string[] mockHeaders = ["ID", "NAME", "POPULATION", "ACTIVITY", "STATUS", "SIM METRIC"];
+
+        var mockRows = _mockNodes.Select(n => new[]
+        {
+            new TableCellData { Text = n.Id.ToString() },
+            new TableCellData { Text = n.Name },
+            new TableCellData { Text = $"{n.Population:F1} M", ColorHex = "#EFB122", IsBold = true },
+            new TableCellData { Text = $"{n.ActivityLevel:F2}" },
+            new TableCellData { Text = n.Status, ColorHex = n.Status == "CRITICAL" ? "#FF0000" : "#00FF00" },
+            // Extra dynamic column:
+            new TableCellData { Text = $"Val: {(n.Population * n.ActivityLevel):F1}", ColorHex = "#A0A0FF" } 
+        }).ToArray();
+
+        UpdateDynamicTable(mockHeaders, mockRows);
+    }
+
     private void MockSimulationTick(object? sender, EventArgs e)
     {
         if (_mockMigrations == null || _mockMigrations.Count == 0) return;
 
         bool migrationsChanged = false;
 
-        // Iterate backwards because we are modifying and removing items from the list
         for (int i = _mockMigrations.Count - 1; i >= 0; i--)
         {
             var m = _mockMigrations[i];
-            m.Volume -= 0.15f; // Drain rate
+            m.Volume -= 0.15f; 
 
             if (m.Volume <= 0)
             {
@@ -172,7 +171,6 @@ public partial class MainWindow : Window, IVisualMigrataApi
 
         if (migrationsChanged && _mockNodes != null)
         {
-            // Sync the updated arrays back to the visualizer
             UpdateSimulationData(_mockNodes, _mockMigrations.ToArray());
             UpdateGlobalStats(_mockTotalPop, _mockMigrations.Count);
         }
@@ -246,8 +244,9 @@ public partial class MainWindow : Window, IVisualMigrataApi
 
     private void InjectDemoData()
     {
+        // Indicate offline status visually
         SetEngineStatus("OFFLINE (TEST)", false);
-        
+
         var rnd = new Random(1337);
         int count = 40;
         float extent = 200.0f;
@@ -310,4 +309,12 @@ public partial class MainWindow : Window, IVisualMigrataApi
         jsonBuilder.Append("]}");
         return jsonBuilder.ToString();
     }
+}
+
+// Used internally by Avalonia to bind UI elements cleanly
+public class CellViewModel
+{
+    public string Text { get; set; } = string.Empty;
+    public Avalonia.Media.IBrush? Brush { get; set; }
+    public Avalonia.Media.FontWeight Weight { get; set; }
 }

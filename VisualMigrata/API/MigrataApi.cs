@@ -1,14 +1,25 @@
-﻿using System;
+﻿// --- START OF FILE MigrataApi.cs ---
+using System;
 
 namespace VisualMigrata.API;
 
+/// <summary>
+/// A generic container allowing the backend to format table cells dynamically.
+/// </summary>
+public class TableCellData
+{
+    public string Text { get; set; } = string.Empty;
+    public string ColorHex { get; set; } = "#FFFFFF";
+    public bool IsBold { get; set; } = false;
+}
+
 public interface IVisualMigrataApi
 {
-    // New additions for backend control
     void SetEngineStatus(string status, bool isOnline);
-    void UpdateTableHeaders(string col1, string col2, string col3, string col4, string col5);
+    
+    // NEW: The backend passes an array of headers, and a 2D array of rows/columns.
+    void UpdateDynamicTable(string[] headers, TableCellData[][] rows);
 
-    // Existing methods
     void UpdateGlobalStats(float totalPopulation, int activeMigrations);
     void UpdateSimulationData(GruisNodeData[] nodes, GruisMigrationData[] migrations);
     void UpdateLabelsJSON(string jsonPayload);
